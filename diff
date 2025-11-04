@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Box n Haul Delivery Price Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f2f6fa; padding: 20px; margin:0; }
+    .booking-widget { max-width: 420px; background:#fff; padding:25px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.15); margin:auto; }
+    .booking-widget h2 { text-align:center; color:#1E88E5; margin-bottom:15px; }
+    label { display:block; margin-top:12px; font-weight:bold; }
+    input, textarea, button { width:100%; padding:10px; margin-top:5px; border:1px solid #ccc; border-radius:6px; font-size:15px; }
+    button { background:#1E88E5; color:white; border:none; cursor:pointer; font-weight:bold; margin-top:18px; }
+    button:hover { background:#1565C0; }
+    .price { text-align:center; margin-top:15px; font-size:18px; font-weight:bold; }
+  </style>
+</head>
+<body>
+
+<div class="booking-widget">
+  <h2>Schedule Your Delivery</h2>
+  <form id="moveForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+    <label>Pick-up Address:</label>
+    <input type="text" id="pickup" required>
+    <label>Drop-off Address:</label>
+    <input type="text" id="dropoff" required>
+    <label>Number of Items:</label>
+    <input type="number" id="items" min="1" value="1" required>
+    <label>Preferred Date:</label>
+    <input type="date" name="date" required>
+    <label>Notes:</label>
+    <textarea name="notes"></textarea>
+    <div class="price" id="priceDisplay">Total: $0</div>
+    <button>Book Delivery</button>
+  </form>
+</div>
+
+<script>
+function initAutocomplete() {
+  new google.maps.places.Autocomplete(document.getElementById('pickup'));
+  new google.maps.places.Autocomplete(document.getElementById('dropoff'));
+
+  document.getElementById('pickup').addEventListener('change', calc);
+  document.getElementById('dropoff').addEventListener('change', calc);
+  document.getElementById('items').addEventListener('input', calc);
+}
+
+let miles = 0;
+
+function calc(){
+  const o = document.getElementById('pickup').value;
+  const d = document.getElementById('dropoff').value;
+  const items = Number(document.getElementById('items').value);
+
+  if(!o || !d) return;
+
+  const service = new google.maps.DistanceMatrixService();
+  service.getDistanceMatrix({
+    origins: [o], destinations:[d], travelMode:"DRIVING"
+  }, (res,status)=>{
+    if(status==="OK"){
+      miles = res.rows[0].elements[0].distance.value/1609.34;
+      let base = 129 + (items-1)*40;
+      let extra = miles > 25 ? miles-25 : 0;
+      let total = Math.round(base + extra);
+      document.getElementById('priceDisplay').textContent = `Total: $${total}`;
+    }
+  });
+}
+</script>
+
+<script src="AIzaSyDKI80ZVUdHfKUlpUWgyjZgQRHfjJAirNA" async defer></script>
+</body>
+</html>
